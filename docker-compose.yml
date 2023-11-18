@@ -1,0 +1,71 @@
+version: "3.5"
+services:
+  db:
+    image: 'postgres:13'
+    container_name: 'db'
+    networks:
+      - backend
+    env_file: ./env/.db.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  chrome:
+   image: selenium/standalone-chrome:latest
+   container_name: 'chrome'
+   networks:
+     - backend
+   ports:
+     - '4444:4444'
+     - '7900:7900'
+   privileged: true
+   shm_size: 2g
+   restart: unless-stopped
+
+  todo:
+    build: .
+    container_name: 'todo'
+    image: 'todo:1'
+    command: >
+      sh -c 'cd src &&
+             poetry run python3 manage.py migrate --no-input &&
+             poetry run python3 manage.py createadmin &&
+             poetry run python3 manage.py runserver 0.0.0.0:8080'
+    networks:
+      - backend
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./src:/service/src
+      - ./tests:/service/tests
+      - app_static:/service/src/static
+      - app_media:/service/src/media
+    env_file:
+      - ./env/.todo.env
+    restart: unless-stopped
+    depends_on:
+      - db
+      - chrome
+
+  jenkins:
+    image: myjenkins:2.414.2-jdk11
+    container_name: 'jenkins'
+    networks:
+      - backend
+    ports:
+      - '8000:8080'
+      - '50000:50000'
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - jenkins_docker_certs:/certs/client:ro
+    restart: unless-stopped
+
+networks:
+  backend:
+
+volumes:
+  jenkins_data:
+  jenkins_docker_certs:
+  postgres_data:
+  app_static:
+  app_media:
