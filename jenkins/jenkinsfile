@@ -28,7 +28,7 @@ pipeline {
             steps {
                 echo 'Deliver....'
                 sh '''
-                echo "3"
+                python3 test.py
                 '''
             }
         }
