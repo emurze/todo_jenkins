@@ -24,8 +24,8 @@ services:
 
   todo:
     build: .
-    container_name: 'todo'
     image: 'todo:1'
+    container_name: 'todo'
     command: >
       sh -c 'cd src &&
              poetry run python3 manage.py migrate --no-input &&
@@ -58,6 +58,18 @@ services:
     volumes:
       - jenkins_data:/var/jenkins_home
       - jenkins_docker_certs:/certs/client:ro
+    restart: unless-stopped
+
+  socat:
+    image: alpine/socat
+    container_name: 'socat'
+    command: tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock
+    networks:
+      - backend
+    expose:
+      - "2375"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 
 networks:
