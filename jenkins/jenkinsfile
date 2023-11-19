@@ -5,7 +5,7 @@ pipeline {
         }
     }
     triggers {
-        pollSCM 'h/5 * * * *'
+        pollSCM '* * * * *'
     }
     stages {
         stage('Build') {
@@ -18,7 +18,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                echo "Testing.."
+                echo "Testing..."
                 sh '''
                 echo "2"
                 '''
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 echo 'Deliver....'
                 sh '''
-                python3 test.py
+                echo "3"
                 '''
             }
         }
